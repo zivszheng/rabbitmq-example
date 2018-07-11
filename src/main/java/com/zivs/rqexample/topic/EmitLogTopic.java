@@ -3,6 +3,7 @@ package com.zivs.rqexample.topic;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.zivs.rqexample.utils.MyConnectionFactory;
+import org.springframework.amqp.core.ExchangeTypes;
 
 public class EmitLogTopic {
 
@@ -13,7 +14,7 @@ public class EmitLogTopic {
         Connection connection = MyConnectionFactory.getConnection();
         Channel channel = connection.createChannel();
 
-        channel.exchangeDeclare(EXCHANGE_NAME, "topic");
+        channel.exchangeDeclare(EXCHANGE_NAME, ExchangeTypes.TOPIC);
 
         String[] routing_keys = {"kernel.info", "cron.warn", "auth.info", "kernel.critical"};
         int i = 0;

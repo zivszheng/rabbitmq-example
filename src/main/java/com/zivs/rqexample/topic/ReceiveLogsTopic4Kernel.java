@@ -2,6 +2,7 @@ package com.zivs.rqexample.topic;
 
 import com.rabbitmq.client.*;
 import com.zivs.rqexample.utils.MyConnectionFactory;
+import org.springframework.amqp.core.ExchangeTypes;
 
 import java.io.IOException;
 
@@ -15,7 +16,7 @@ public class ReceiveLogsTopic4Kernel {
         Channel channel = connection.createChannel();
 
         // 声明direct类型转发器
-        channel.exchangeDeclare(EXCHANGE_NAME, "topic");
+        channel.exchangeDeclare(EXCHANGE_NAME, ExchangeTypes.TOPIC);
         // 随机生成一个队列
         String queueName = channel.queueDeclare().getQueue();
 

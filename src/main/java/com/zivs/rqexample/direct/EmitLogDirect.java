@@ -1,8 +1,9 @@
-package com.zivs.rqexample.routing;
+package com.zivs.rqexample.direct;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.zivs.rqexample.utils.MyConnectionFactory;
+import org.springframework.amqp.core.ExchangeTypes;
 
 import java.util.Random;
 
@@ -18,7 +19,7 @@ public class EmitLogDirect {
         Channel channel = connection.createChannel();
 
         // 声明转发器的类型
-        channel.exchangeDeclare(EXCHANGE_NAME, "direct");
+        channel.exchangeDeclare(EXCHANGE_NAME, ExchangeTypes.DIRECT);
 
         //发送6条消息
         for (int i = 0; i < 10; i++) {
