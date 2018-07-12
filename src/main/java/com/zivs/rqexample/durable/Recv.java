@@ -1,13 +1,13 @@
-package com.zivs.rqexample.workfair;
+package com.zivs.rqexample.durable;
 
 import com.rabbitmq.client.*;
 import com.zivs.rqexample.utils.MyConnectionFactory;
 
 import java.io.IOException;
 
-public class Recv1 {
+public class Recv {
     // 队列名称
-    private final static String QUEUE_NAME = "fair_queue";
+    private final static String QUEUE_NAME = "durable_queue";
 
     public static void main(String[] argv) throws Exception {
         // 获取连接
@@ -15,7 +15,7 @@ public class Recv1 {
         Channel channel = connection.createChannel();
 
         // 队列声明
-        channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+        channel.queueDeclare(QUEUE_NAME, true, false, false, null);
 
         // 实时监听mq消息处理
         Consumer consumer = new DefaultConsumer(channel) {
@@ -23,13 +23,9 @@ public class Recv1 {
             public void handleDelivery(String consumerTag, Envelope envelope,
                                        AMQP.BasicProperties properties, byte[] body) throws IOException {
                 String message = new String(body, "UTF-8");
-                System.out.println(" [1] Received msg: '" + message + "'");
+                System.out.println(" [durable] Received msg: '" + message + "'");
                 // 返回确认状态
                 channel.basicAck(envelope.getDeliveryTag(), false);
-                try {
-                    Thread.sleep(300);
-                } catch (InterruptedException e) {
-                }
             }
         };
         // autoAck = true : 自动确认
