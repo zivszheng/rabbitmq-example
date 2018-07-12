@@ -7,6 +7,7 @@ import com.rabbitmq.client.MessageProperties;
 import com.zivs.rqexample.utils.MyConnectionFactory;
 
 import java.io.IOException;
+import java.sql.CallableStatement;
 import java.util.Collections;
 import java.util.Set;
 import java.util.SortedSet;
@@ -34,34 +35,46 @@ public class Send3 {
         // 开启 confirm 模式
         channel.confirmSelect();
 
-        for (int i = 0; i < 100000; i++) {
-            // message
-            String message = "User " + i + " Say Hello!";
-            // 发送message
-            /**
-             * MessageProperties.PERSISTENT_TEXT_PLAIN  : 会将 BasicProperties 的 deliveryMode 设置为2
-             * deliveryMode=1代表不持久化
-             * deliveryMode=2代表持久化
-             */
-            channel.basicPublish("", QUEUE_NAME, MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes());
-            System.out.println(" [" + i + "] Sent msg: '" + message + "'");
-        }
+        // 未确认的消息集合
+        SortedSet<Long> confirmSet = Collections.synchronizedSortedSet(new TreeSet<>());
 
-        long start = System.currentTimeMillis();
+        // channel 添加监听
         channel.addConfirmListener(new ConfirmListener() {
+            // 处理法发送有问题的
             @Override
             public void handleNack(long deliveryTag, boolean multiple) throws IOException {
-                System.out.println("nack: deliveryTag = " + deliveryTag + " multiple: " + multiple);
+                if(multiple) {
+                    confirmSet.headSet(deliveryTag+1).clear();
+                    System.out.println("nack: deliveryTag = " + deliveryTag + " multiple: " + multiple);
+                } else {
+                    confirmSet.remove(deliveryTag);
+                    System.err.println("nack: deliveryTag = " + deliveryTag + " multiple: " + multiple);
+                }
             }
 
+            // 处理发送成功的
             @Override
             public void handleAck(long deliveryTag, boolean multiple) throws IOException {
-                System.out.println("ack: deliveryTag = " + deliveryTag + " multiple: " + multiple);
+                if(multiple) {
+                    confirmSet.headSet(deliveryTag+1).clear();
+                    System.out.println("ack: deliveryTag = " + deliveryTag + " multiple: " + multiple);
+                } else {
+                    confirmSet.remove(deliveryTag);
+                    System.err.println("ack: deliveryTag = " + deliveryTag + " multiple: " + multiple);
+                }
             }
         });
-        System.out.println("执行waitForConfirmsOrDie耗费时间: " + (System.currentTimeMillis() - start) + "ms");
 
-        channel.close();
-        connection.close();
+        String message ;
+        while (true) {
+            Long seq = channel.getNextPublishSeqNo();
+
+            // 发送message
+            message = "User " + seq + " Say Hello!";
+            channel.basicPublish("", QUEUE_NAME, MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes());
+            System.out.println(" [" + seq + "] Sent msg: '" + message + "'");
+
+            confirmSet.add(seq);
+        }
     }
 }
