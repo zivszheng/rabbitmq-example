@@ -1,4 +1,4 @@
-package com.zivs.rqexample.transaction;
+package com.zivs.rqexample.confirm;
 
 import com.rabbitmq.client.*;
 import com.zivs.rqexample.utils.MyConnectionFactory;
@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class Recv {
     // 队列名称
-    private final static String QUEUE_NAME = "transaction_queue";
+    private final static String QUEUE_NAME = "confirm_queue";
 
     public static void main(String[] argv) throws Exception {
         // 获取连接
@@ -23,7 +23,7 @@ public class Recv {
             public void handleDelivery(String consumerTag, Envelope envelope,
                                        AMQP.BasicProperties properties, byte[] body) throws IOException {
                 String message = new String(body, "UTF-8");
-                System.out.println(" [transaction] Received msg: '" + message + "'");
+                System.out.println(" [confirm] Received msg: '" + message + "'");
                 // 返回确认状态
                 channel.basicAck(envelope.getDeliveryTag(), false);
             }
