@@ -72,8 +72,6 @@ public class Send3 {
             // 发送message
             message = "User " + seq + " Say Hello!";
             channel.basicPublish("", QUEUE_NAME, MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes());
-            System.out.println(" [" + seq + "] Sent msg: '" + message + "'");
-
             confirmSet.add(seq);
         }
     }
